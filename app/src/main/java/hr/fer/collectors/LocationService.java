@@ -1,39 +1,54 @@
 package hr.fer.collectors;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.inputmethodservice.Keyboard;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Build;
+
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ServiceCompat;
-import android.support.v4.content.ContextCompat;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
+
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import hr.fer.MainActivity;
+import hr.fer.connection.HTTPURLConnection;
+
 
 public class LocationService
         extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
-    private LocationCallback mLocationCallback;
+    private HTTPURLConnection service;
+    private JSONObject json;
+    private int success = 0;
+    private String path = "http://192.168.56.1/ZavRad/addlocation.php";
 
-    public static final long NOTIFY_INTERVAL = 100 * 1000; // 10 seconds
+    private String userid = String.valueOf(0);
+    private double latitude = 0;
+
+    private double longitude = 0;
+
+    private Date datetime = new Date();
+
+    public static final long NOTIFY_INTERVAL = 5 * 1000; // 10 seconds
 
     // run on another Thread to avoid crash
     private Handler mHandler = new Handler();
@@ -51,7 +66,7 @@ public class LocationService
     @Override
     public void onCreate() {
 
-        if(mTimer != null) {
+        if (mTimer != null) {
             mTimer.cancel();
         } else {
             // recreate new
@@ -60,29 +75,13 @@ public class LocationService
         // schedule task
         mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
 
-/*
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-            checkPermission();
-        }
-        */
+        service = new HTTPURLConnection();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-
-
     }
-/*
-    public void checkPermission(){
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                ){//Can add more as per requirement
 
-            ServiceCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},
-                    123);
-        }
-    }*/
 
     class TimeDisplayTimerTask extends TimerTask {
 
@@ -96,6 +95,8 @@ public class LocationService
                     // display toast
                     Toast.makeText(getApplicationContext(), getLocation(),
                             Toast.LENGTH_SHORT).show();
+
+                    new PostDataTOServer().execute();
                 }
 
             });
@@ -103,16 +104,17 @@ public class LocationService
 
         private String getLocation() {
             Location lastLocation;
-            try{
+            try {
                 lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-            }catch(SecurityException ex){
+            } catch (SecurityException ex) {
                 return "Error occured.";
             }
-            double lat = lastLocation.getLatitude();
-            double lng = lastLocation.getLongitude();
+            latitude = lastLocation.getLatitude();
+            longitude= lastLocation.getLongitude();
+            datetime = new Date();
 
-            String result = "Latitude: " + lat + " Longitude: " + lng
+            String result = "Latitude: " + latitude + " Longitude: " + longitude
                     + " " + new Date().toString();
 
             return result;
@@ -120,5 +122,50 @@ public class LocationService
 
     }
 
+    private class PostDataTOServer extends AsyncTask<Void, Void, Void> {
+        String response = "";
+        //Create hashmap Object to send parameters to web service
+        HashMap<String, String> postDataParams;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
 
+        }
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            postDataParams = new HashMap<>();
+            postDataParams.put("id", userid);
+            postDataParams.put("latitude", String.valueOf(latitude));
+            postDataParams.put("longitude", String.valueOf(longitude));
+            postDataParams.put("datetime", datetime.toString());
+
+
+
+            //Call ServerData() method to call webservice and store result in response
+            response = service.ServerData(path,postDataParams);
+           /* try {
+               // json = new JSONObject(response);
+                //Get Values from JSONobject
+                //System.out.println("success=" + json.get("success"));
+                //success = json.getInt("success");
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }*/
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            if(success==1) {
+                Toast.makeText(getApplicationContext(), "Location Added successfully..!", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 }
+
+
+
+
+
