@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1053565545755",
+    "firebase_url": "https://keyboard-60de3.firebaseio.com",
+    "project_id": "keyboard-60de3",
+    "storage_bucket": "keyboard-60de3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1053565545755:android:56ed915ddd0708f2",
+        "android_client_info": {
+          "package_name": "hr.fer.keyboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1053565545755-gvjslcvch9cscur9ppbnthplj2jln978.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hr.fer.keyboard",
+            "certificate_hash": "3a2a4205f942e1a6508669ae435eca9662fd013f"
+          }
+        },
+        {
+          "client_id": "1053565545755-mnv5kh0fjt36nji0gfa0rr685grtlu9u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwfXTKb0OY5_WAxNc7klTR58Id3XmWFNw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1053565545755-mnv5kh0fjt36nji0gfa0rr685grtlu9u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
