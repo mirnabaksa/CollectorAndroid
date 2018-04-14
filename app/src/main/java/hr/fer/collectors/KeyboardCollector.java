@@ -1,9 +1,11 @@
 package hr.fer.collectors;
 
 
+import android.content.Intent;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
+import android.os.UserHandle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -17,6 +19,8 @@ public class KeyboardCollector extends InputMethodService
     private android.inputmethodservice.Keyboard keyboard;
 
     private boolean caps = false;
+
+
 
     @Override
     public View onCreateInputView() {

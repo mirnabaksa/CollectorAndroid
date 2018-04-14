@@ -29,21 +29,18 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import hr.fer.MainActivity;
-import hr.fer.connection.HTTPURLConnection;
 
+import hr.fer.connection.HTTPURLConnection;
 
 public class LocationService
         extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
     private HTTPURLConnection service;
-    private JSONObject json;
     private int success = 0;
-    private String path = "http://192.168.56.1/ZavRad/addlocation.php";
+    private String path = "https://zavradmb2018.000webhostapp.com/addlocation.php";
 
-    private String userid = String.valueOf(0);
+    private int userid = 0;
     private double latitude = 0;
-
     private double longitude = 0;
 
     private Date datetime = new Date();
@@ -65,14 +62,11 @@ public class LocationService
 
     @Override
     public void onCreate() {
-
         if (mTimer != null) {
             mTimer.cancel();
         } else {
-            // recreate new
             mTimer = new Timer();
         }
-        // schedule task
         mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
 
         service = new HTTPURLConnection();
@@ -134,7 +128,7 @@ public class LocationService
         @Override
         protected Void doInBackground(Void... arg0) {
             postDataParams = new HashMap<>();
-            postDataParams.put("id", userid);
+            postDataParams.put("id", String.valueOf(++userid));
             postDataParams.put("latitude", String.valueOf(latitude));
             postDataParams.put("longitude", String.valueOf(longitude));
             postDataParams.put("datetime", datetime.toString());
@@ -143,15 +137,7 @@ public class LocationService
 
             //Call ServerData() method to call webservice and store result in response
             response = service.ServerData(path,postDataParams);
-           /* try {
-               // json = new JSONObject(response);
-                //Get Values from JSONobject
-                //System.out.println("success=" + json.get("success"));
-                //success = json.getInt("success");
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }*/
             return null;
         }
 
