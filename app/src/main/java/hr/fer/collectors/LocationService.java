@@ -5,6 +5,8 @@ import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 
@@ -14,6 +16,8 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -28,28 +32,38 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
 import hr.fer.connection.HTTPURLConnection;
+import hr.fer.keyboard.R;
+
+import static android.content.ContentValues.TAG;
 
 public class LocationService
         extends Service {
+    private final String ADDRESS_UNKNOWN = "Unknown";
+    private final String SERVER_PATH = "https://zavradmb2018.000webhostapp.com/addlocation.php";
+
     private FusedLocationProviderClient mFusedLocationClient;
     private HTTPURLConnection service;
-    private String path = "https://zavradmb2018.000webhostapp.com/addlocation.php";
 
     private int userid = 0;
     private double latitude = 0;
     private double longitude = 0;
-
     private Date datetime = new Date();
+    private String address;
 
     private  LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
+    private Geocoder geocoder;
 
 
     @Nullable
@@ -61,6 +75,8 @@ public class LocationService
     @Override
     public void onCreate() {
         service = new HTTPURLConnection();
+        geocoder = new Geocoder(this, Locale.getDefault());
+
         createLocationRequest();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -86,7 +102,7 @@ public class LocationService
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
     }
 
 
@@ -99,15 +115,47 @@ public class LocationService
                 continue;
             }
         }
-
     }
 
     private void updateLocation(Location location) {
         latitude = location.getLatitude();
         longitude= location.getLongitude();
         datetime = new Date();
+        address = fetchAddress(location);
     }
 
+    private String fetchAddress(Location location){
+        List<Address> addresses = null;
+
+        try {
+            addresses = geocoder.getFromLocation(
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    // In this sample, get just a single address.
+                    1);
+        } catch (IOException ioException) {
+            // Catch network or other I/O problems.
+        } catch (IllegalArgumentException illegalArgumentException) {
+            // Catch invalid latitude or longitude values.
+        }
+
+        if (addresses == null || addresses.size()  == 0) {
+            return ADDRESS_UNKNOWN;
+        } else {
+            Address address = addresses.get(0);
+            ArrayList<String> addressFragments = new ArrayList<String>();
+
+            // Fetch the address lines using getAddressLine,
+            // join them, and send them to the thread.
+            for(int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+                addressFragments.add(address.getAddressLine(i));
+            }
+
+            String strAdr = TextUtils.join(System.getProperty("line.separator"),
+                    addressFragments);
+            return strAdr;
+        }
+    }
 
 
     private class PostDataTOServer extends AsyncTask<Void, Void, Void> {
@@ -126,8 +174,9 @@ public class LocationService
             postDataParams.put("latitude", String.valueOf(latitude));
             postDataParams.put("longitude", String.valueOf(longitude));
             postDataParams.put("datetime", datetime.toString());
+            postDataParams.put("address", address);
 
-            response = service.ServerData(path,postDataParams);
+            response = service.ServerData(SERVER_PATH,postDataParams);
             return null;
         }
 
