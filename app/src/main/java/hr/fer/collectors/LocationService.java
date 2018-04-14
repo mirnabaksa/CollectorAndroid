@@ -18,7 +18,11 @@ import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
 
 
 import org.json.JSONException;
@@ -36,7 +40,6 @@ public class LocationService
         extends Service {
     private FusedLocationProviderClient mFusedLocationClient;
     private HTTPURLConnection service;
-    private int success = 0;
     private String path = "https://zavradmb2018.000webhostapp.com/addlocation.php";
 
     private int userid = 0;
@@ -45,13 +48,8 @@ public class LocationService
 
     private Date datetime = new Date();
 
-    public static final long NOTIFY_INTERVAL = 5 * 1000; // 10 seconds
-
-    // run on another Thread to avoid crash
-    private Handler mHandler = new Handler();
-    // timer handling
-    private Timer mTimer = null;
-    private LocationManager locationManager;
+    private  LocationRequest mLocationRequest;
+    private LocationCallback mLocationCallback;
 
 
     @Nullable
@@ -62,63 +60,59 @@ public class LocationService
 
     @Override
     public void onCreate() {
-        if (mTimer != null) {
-            mTimer.cancel();
-        } else {
-            mTimer = new Timer();
-        }
-        mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
-
         service = new HTTPURLConnection();
+        createLocationRequest();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-    }
-
-
-    class TimeDisplayTimerTask extends TimerTask {
-
-        @Override
-        public void run() {
-            // run on another thread
-            mHandler.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    // display toast
-                    Toast.makeText(getApplicationContext(), getLocation(),
-                            Toast.LENGTH_SHORT).show();
-
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    updateLocation(location);
+                    Toast.makeText(getApplicationContext(),"Sending to server!" + latitude + " " + longitude, Toast.LENGTH_SHORT).show();
                     new PostDataTOServer().execute();
                 }
+            };
+        };
 
-            });
-        }
+        startLocationUpdates();
+    }
 
-        private String getLocation() {
-            Location lastLocation;
-            try {
-                lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-            } catch (SecurityException ex) {
-                return "Error occured.";
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+
+    private void startLocationUpdates() {
+        while(true){
+            try{
+                mFusedLocationClient.requestLocationUpdates(mLocationRequest,mLocationCallback,null /* Looper */);
+                break;
+            }catch(SecurityException ex) {
+                continue;
             }
-            latitude = lastLocation.getLatitude();
-            longitude= lastLocation.getLongitude();
-            datetime = new Date();
-
-            String result = "Latitude: " + latitude + " Longitude: " + longitude
-                    + " " + new Date().toString();
-
-            return result;
         }
 
     }
+
+    private void updateLocation(Location location) {
+        latitude = location.getLatitude();
+        longitude= location.getLongitude();
+        datetime = new Date();
+    }
+
+
 
     private class PostDataTOServer extends AsyncTask<Void, Void, Void> {
         String response = "";
-        //Create hashmap Object to send parameters to web service
+
         HashMap<String, String> postDataParams;
         @Override
         protected void onPreExecute() {
@@ -133,21 +127,11 @@ public class LocationService
             postDataParams.put("longitude", String.valueOf(longitude));
             postDataParams.put("datetime", datetime.toString());
 
-
-
-            //Call ServerData() method to call webservice and store result in response
             response = service.ServerData(path,postDataParams);
-
             return null;
         }
 
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-            if(success==1) {
-                Toast.makeText(getApplicationContext(), "Location Added successfully..!", Toast.LENGTH_LONG).show();
-            }
-        }
+
     }
 }
 
