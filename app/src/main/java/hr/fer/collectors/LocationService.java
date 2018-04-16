@@ -1,51 +1,27 @@
 package hr.fer.collectors;
 
-import android.Manifest;
-import android.app.ProgressDialog;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationManager;
-
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Toast;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
-
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
-
-
 import hr.fer.connection.HTTPURLConnection;
-import hr.fer.keyboard.R;
-
-import static android.content.ContentValues.TAG;
 
 public class LocationService
         extends Service {
@@ -100,8 +76,8 @@ public class LocationService
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setInterval(60 *1000);
+        mLocationRequest.setFastestInterval(60 * 1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
     }
 
