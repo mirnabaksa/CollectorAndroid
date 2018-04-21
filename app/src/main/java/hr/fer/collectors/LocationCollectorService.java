@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Locale;
 import hr.fer.connection.HTTPURLConnection;
 
-public class LocationService
+public class LocationCollectorService
         extends Service {
     private final String ADDRESS_UNKNOWN = "Unknown";
-    private final String SERVER_PATH = "https://zavradmb2018.000webhostapp.com/addlocation.php";
+    private final String SERVER_PATH = "https://zavradmb2018.000webhostapp.com/addLocation.php";
 
     private FusedLocationProviderClient mFusedLocationClient;
     private HTTPURLConnection service;
@@ -36,6 +36,7 @@ public class LocationService
     private double longitude = 0;
     private Date datetime = new Date();
     private String address;
+    private Location currentLocation;
 
     private  LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback;
@@ -63,6 +64,10 @@ public class LocationService
                     return;
                 }
                 for (Location location : locationResult.getLocations()) {
+                    if(location == null && currentLocation == null &&
+                            location.getLatitude() == currentLocation.getLatitude()
+                            && location.getLongitude() == currentLocation.getLongitude()) break;
+
                     updateLocation(location);
                     Toast.makeText(getApplicationContext(),"Sending to server!" + latitude + " " + longitude, Toast.LENGTH_SHORT).show();
                     new PostDataTOServer().execute();
@@ -94,6 +99,8 @@ public class LocationService
     }
 
     private void updateLocation(Location location) {
+        currentLocation = location;
+
         latitude = location.getLatitude();
         longitude= location.getLongitude();
         datetime = new Date();

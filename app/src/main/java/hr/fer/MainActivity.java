@@ -9,12 +9,13 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import hr.fer.collectors.KeyboardCollector;
-import hr.fer.collectors.LocationService;
+import hr.fer.collectors.KeyboardCollectorService;
+import hr.fer.collectors.LocationCollectorService;
 
 import hr.fer.keyboard.R;
 
 public class MainActivity extends AppCompatActivity {
+    private final static int WAIT_INTERVAL = 5 * 1000; //5 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +26,10 @@ public class MainActivity extends AppCompatActivity {
             checkPermission();
         }
 
-        Intent serviceIntent = new Intent(this, KeyboardCollector.class);
+        Intent serviceIntent = new Intent(this, KeyboardCollectorService.class);
         startService(serviceIntent);
 
-        Intent serviceIntentLocation = new Intent(this, LocationService.class);
+        Intent serviceIntentLocation = new Intent(this, LocationCollectorService.class);
         startService(serviceIntentLocation);
     }
 
@@ -38,8 +39,15 @@ public class MainActivity extends AppCompatActivity {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
 
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.RECORD_AUDIO},
                     123);
+
+
+            try {
+                Thread.currentThread().sleep(WAIT_INTERVAL);
+            } catch (InterruptedException e) {
+            }
         }
     }
 

