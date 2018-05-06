@@ -17,11 +17,14 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
+/**
+ * NEEDS REWRITING
+ */
 public class HTTPURLConnection {
     String response="";
     URL url;
 
-    public String ServerData(String path,HashMap<String, String> params) {
+    public String ServerData(String path, HashMap<String, String> params) {
         try {
             url = new URL(path);
 

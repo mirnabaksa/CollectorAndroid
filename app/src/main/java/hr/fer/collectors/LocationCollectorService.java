@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import hr.fer.connection.HTTPURLConnection;
+import hr.fer.connection.PostDataToServer;
 
 public class LocationCollectorService
         extends Service {
@@ -49,6 +50,8 @@ public class LocationCollectorService
         return null;
     }
 
+
+
     @Override
     public void onCreate() {
         service = new HTTPURLConnection();
@@ -70,12 +73,22 @@ public class LocationCollectorService
 
                     updateLocation(location);
                     Toast.makeText(getApplicationContext(),"Sending to server!" + latitude + " " + longitude, Toast.LENGTH_SHORT).show();
-                    new PostDataTOServer().execute();
+                    new PostDataToServer(SERVER_PATH, preparePOSTParams()).execute();
                 }
             };
         };
 
         startLocationUpdates();
+    }
+
+    private HashMap<String, String> preparePOSTParams(){
+        HashMap<String, String> postDataParams = new HashMap<>();
+        postDataParams.put("id", String.valueOf(++userid));
+        postDataParams.put("latitude", String.valueOf(latitude));
+        postDataParams.put("longitude", String.valueOf(longitude));
+        postDataParams.put("datetime", datetime.toString());
+        postDataParams.put("address", address);
+        return  postDataParams;
     }
 
 
@@ -140,7 +153,7 @@ public class LocationCollectorService
         }
     }
 
-
+/*
     private class PostDataTOServer extends AsyncTask<Void, Void, Void> {
         String response = "";
 
@@ -164,7 +177,7 @@ public class LocationCollectorService
         }
 
 
-    }
+    }*/
 }
 
 
