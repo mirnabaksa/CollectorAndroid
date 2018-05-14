@@ -1,7 +1,10 @@
 package hr.fer;
 
 import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
@@ -9,13 +12,18 @@ import android.media.MediaRecorder;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.AppCompatButton;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.Toast;
+
+import com.google.android.gms.common.AccountPicker;
 
 import hr.fer.collectors.AudioCollectorService;
 import hr.fer.collectors.KeyboardCollectorService;
@@ -25,7 +33,7 @@ import hr.fer.keyboard.R;
 
 public class MainActivity extends AppCompatActivity {
     private final static int WAIT_INTERVAL = 10 * 1000; //10 seconds
-    private Intent mediaIntent;
+    private final static int ACCOUNT_CODE = 1;
 
     private Button recordButton;
     private Button keyboardButton;
@@ -42,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
     private Intent locationIntent;
     private Intent keyboardIntent;
     private Intent audioIntent;
+    private Intent accountIntent;
+
+    private String accountName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +63,22 @@ public class MainActivity extends AppCompatActivity {
             checkPermission();
         }
 
-        configureIntents();
-        configureButtons();
+        accountIntent = AccountPicker.newChooseAccountIntent(null, null,
+                new String[] {"com.google"},
+                false, null, null, null, null);
+        startActivityForResult(accountIntent, ACCOUNT_CODE);
+
     }
 
     private void configureIntents(){
         locationIntent = new Intent(this, LocationCollectorService.class);
+        locationIntent.putExtra("Account", accountName);
+
         keyboardIntent = new Intent(this, KeyboardCollectorService.class);
+        keyboardIntent.putExtra("Account", accountName);
+
         audioIntent = new Intent(this, AudioCollectorService.class);
+        audioIntent.putExtra("Account", accountName);
     }
 
     private void configureButtons(){
@@ -134,13 +153,41 @@ public class MainActivity extends AppCompatActivity {
 
    private void manageService(Intent intent, boolean start) {
        if (start) {
-           startService(intent);
+           this.startService(intent);
        } else {
-           stopService(intent);
+           this.stopService(intent);
        }
    }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ACCOUNT_CODE) {
+            if (resultCode == RESULT_OK) {
+                this.accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
 
+                Log.d("acc", accountName != null? accountName : "Null");
+                configureIntents();
+                configureButtons();
+            } else if (resultCode == RESULT_CANCELED) {
+                AlertDialog.Builder builder;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+                } else {
+                    builder = new AlertDialog.Builder(this);
+                }
+                builder.setTitle("Warning")
+                        .setMessage("In order to use this app, you need to select an account!")
+                        .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivityForResult(accountIntent, ACCOUNT_CODE);
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+
+            }
+        }
+    }
 
 }
 

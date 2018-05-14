@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 
-import hr.fer.connection.HTTPURLConnection;
+
 import hr.fer.connection.PostDataToServer;
 
 public class AudioCollectorService extends Service {
@@ -26,12 +26,10 @@ public class AudioCollectorService extends Service {
     private final String username = "zavradmb2018";
     private final String pass =  "zavrsnirad2018";
 
-    private static int record_id = 0;
+    private String account;
     private String mFileName = null;
     private String serverFileName;
     private MediaRecorder mRecorder = null;
-
-
 
 
     @Nullable
@@ -41,10 +39,16 @@ public class AudioCollectorService extends Service {
     }
 
     @Override
+    public int onStartCommand (Intent intent, int flags, int startId) {
+        account = (String) intent.getExtras().get("Account");
+        return Service.START_NOT_STICKY;
+    }
+
+    @Override
     public void onCreate() {
         mFileName = getExternalCacheDir().getAbsolutePath();
         mFileName += "/" + FILE_NAME + FILE_EXT;
-        serverFileName = FILE_NAME + "-" + record_id + FILE_EXT;;
+        serverFileName = FILE_NAME + "-" + account + FILE_EXT;;
 
         startRecording();
     }
@@ -81,9 +85,9 @@ public class AudioCollectorService extends Service {
 
     private HashMap<String, String> preparePOSTParams() {
         HashMap<String, String> postDataParams = new HashMap<>();
-        postDataParams.put("id", String.valueOf(record_id++));
         postDataParams.put("filename", serverFileName);
         postDataParams.put("datetime", new Date().toString());
+        postDataParams.put("account", account);
         return postDataParams;
     }
 

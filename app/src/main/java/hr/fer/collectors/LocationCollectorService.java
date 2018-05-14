@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -32,11 +33,11 @@ public class LocationCollectorService
     private FusedLocationProviderClient mFusedLocationClient;
     private HTTPURLConnection service;
 
-    private int userid = 0;
     private double latitude = 0;
     private double longitude = 0;
     private Date datetime = new Date();
     private String address;
+    private String account;
     private Location currentLocation;
 
     private  LocationRequest mLocationRequest;
@@ -50,7 +51,11 @@ public class LocationCollectorService
         return null;
     }
 
-
+    @Override
+    public int onStartCommand (Intent intent, int flags, int startId) {
+        account = (String) intent.getExtras().get("Account");
+        return Service.START_NOT_STICKY;
+    }
 
     @Override
     public void onCreate() {
@@ -83,11 +88,11 @@ public class LocationCollectorService
 
     private HashMap<String, String> preparePOSTParams(){
         HashMap<String, String> postDataParams = new HashMap<>();
-        postDataParams.put("id", String.valueOf(++userid));
         postDataParams.put("latitude", String.valueOf(latitude));
         postDataParams.put("longitude", String.valueOf(longitude));
-        postDataParams.put("datetime", datetime.toString());
+        postDataParams.put("date", datetime.toString());
         postDataParams.put("address", address);
+        postDataParams.put("account", account);
         return  postDataParams;
     }
 

