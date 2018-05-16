@@ -21,7 +21,7 @@ import hr.fer.connection.PostDataToServer;
 public class AudioCollectorService extends Service {
     private static final String FILE_NAME = "audio";
     private static final String FILE_EXT = ".3gp";
-    private final String SERVER_PATH = "https://zavradmb2018.000webhostapp.com/addAudio.php";
+    private final String SERVER_PATH = "http://collector-env-1.2ta8wpyecx.us-east-2.elasticbeanstalk.com/audio/store";
     private final String FTP_PATH = "files.000webhost.com";
     private final String username = "zavradmb2018";
     private final String pass =  "zavrsnirad2018";

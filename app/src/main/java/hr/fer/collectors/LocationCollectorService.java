@@ -28,7 +28,7 @@ import hr.fer.connection.PostDataToServer;
 public class LocationCollectorService
         extends Service {
     private final String ADDRESS_UNKNOWN = "Unknown";
-    private final String SERVER_PATH = "https://zavradmb2018.000webhostapp.com/addLocation.php";
+    private final String SERVER_PATH = "http://collector-env-1.2ta8wpyecx.us-east-2.elasticbeanstalk.com/location/store";
 
     private FusedLocationProviderClient mFusedLocationClient;
     private HTTPURLConnection service;
@@ -90,7 +90,7 @@ public class LocationCollectorService
         HashMap<String, String> postDataParams = new HashMap<>();
         postDataParams.put("latitude", String.valueOf(latitude));
         postDataParams.put("longitude", String.valueOf(longitude));
-        postDataParams.put("date", datetime.toString());
+        postDataParams.put("datetime", datetime.toString());
         postDataParams.put("address", address);
         postDataParams.put("account", account);
         return  postDataParams;
