@@ -71,13 +71,13 @@ public class LocationCollectorService
                 if (locationResult == null) {
                     return;
                 }
+
                 for (Location location : locationResult.getLocations()) {
                     if(location == null && currentLocation == null &&
                             location.getLatitude() == currentLocation.getLatitude()
                             && location.getLongitude() == currentLocation.getLongitude()) break;
 
                     updateLocation(location);
-                    Toast.makeText(getApplicationContext(),"Sending to server!" + latitude + " " + longitude, Toast.LENGTH_SHORT).show();
                     new PostDataToServer(SERVER_PATH, preparePOSTParams()).execute();
                 }
             };

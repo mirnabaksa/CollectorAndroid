@@ -48,7 +48,7 @@ public class AudioCollectorService extends Service {
     public void onCreate() {
         mFileName = getExternalCacheDir().getAbsolutePath();
         mFileName += "/" + FILE_NAME + FILE_EXT;
-        serverFileName = FILE_NAME + "-" + account + FILE_EXT;;
+        serverFileName = FILE_NAME + "-" + System.currentTimeMillis() + FILE_EXT;;
 
         startRecording();
     }
@@ -77,16 +77,17 @@ public class AudioCollectorService extends Service {
 
     private void stopRecording() {
         mRecorder.stop();
-        new UploadFileAsync(mFileName).execute();
         new PostDataToServer(SERVER_PATH, preparePOSTParams()).execute();
+
+        new UploadFileAsync(mFileName).execute();
         mRecorder.release();
         mRecorder = null;
     }
 
     private HashMap<String, String> preparePOSTParams() {
         HashMap<String, String> postDataParams = new HashMap<>();
-        postDataParams.put("filename", serverFileName);
-        postDataParams.put("datetime", new Date().toString());
+        postDataParams.put("path", serverFileName);
+        postDataParams.put("date", new Date().toString());
         postDataParams.put("account", account);
         return postDataParams;
     }

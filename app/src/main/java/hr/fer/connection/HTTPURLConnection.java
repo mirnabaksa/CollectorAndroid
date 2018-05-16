@@ -62,6 +62,7 @@ public class HTTPURLConnection {
             BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(os, "UTF-8"));
             String paramsString = getPostDataString(params);
+            Log.d("params", paramsString);
 
             writer.write(paramsString);
 

@@ -93,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
                     text = "Stop";
                 }else text = "Start";
 
-
                 locationButton.setText(text + locationButtonText);
                 manageService(locationIntent, location);
             }

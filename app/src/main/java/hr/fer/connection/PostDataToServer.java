@@ -25,6 +25,7 @@ public class PostDataToServer extends AsyncTask<Void, Void, Void> {
         Log.d("here", "here");
         String response = conn.ServerData(serverPath, postDataParams);
         Log.d("server response", response);
+        Log.d("path", serverPath);
         return null;
     }
 
