@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -35,6 +36,7 @@ import hr.fer.keyboard.R;
 public class MainActivity extends AppCompatActivity {
     private final static int WAIT_INTERVAL = 10 * 1000; //10 seconds
     private final static int ACCOUNT_CODE = 1;
+    private final static int KEYBOARD_CODE = 2;
 
     private Button recordButton;
     private Button keyboardButton;
@@ -65,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
             checkPermission();
         }
+
 
         accountIntent = AccountPicker.newChooseAccountIntent(null, null,
                 new String[] {"com.google"},
@@ -112,6 +115,35 @@ public class MainActivity extends AppCompatActivity {
                 String text;
                 if(keyboard){
                     text = "Stop";
+
+                    AlertDialog.Builder builder;
+
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                    } else {
+                        builder = new AlertDialog.Builder(MainActivity.this);
+                    }
+                    builder.setTitle("Warning")
+                            .setMessage("In order for the Keyboard Collector to work, you need to set the current" +
+                                    "keyboard to Collector IME in your settings. Ignore if you have already done this! ")
+                            .setPositiveButton("Go to settings", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
+                                    startActivity(settingsIntent);
+                                }
+                            })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+
+
+
+
                 }else text = "Start";
 
                 keyboardButton.setText(text + keyboardButtonText);
