@@ -75,7 +75,6 @@ public class KeyboardCollectorService extends  InputMethodService
         if (timer != null) {
             timer.cancel();
         } else {
-            // recreate new
             timer = new Timer();
         }
         // schedule task
@@ -90,6 +89,7 @@ public class KeyboardCollectorService extends  InputMethodService
         switch (primaryCode) {
             case android.inputmethodservice.Keyboard.KEYCODE_DELETE:
                 ic.deleteSurroundingText(1, 0);
+                if(typedText.length() == 0) break;
                 typedText.setLength(typedText.length() - 1);
                 break;
             case android.inputmethodservice.Keyboard.KEYCODE_SHIFT:

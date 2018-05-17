@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.AccountPicker;
@@ -53,11 +54,13 @@ public class MainActivity extends AppCompatActivity {
     private Intent accountIntent;
 
     private String accountName;
+    private TextView accountHolder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        accountHolder = (TextView) findViewById(R.id.account);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
             checkPermission();
@@ -67,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
                 new String[] {"com.google"},
                 false, null, null, null, null);
         startActivityForResult(accountIntent, ACCOUNT_CODE);
+
+
 
     }
 
@@ -165,6 +170,8 @@ public class MainActivity extends AppCompatActivity {
                 this.accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
 
                 Log.d("acc", accountName != null? accountName : "Null");
+
+                accountHolder.setText("Using: " + this.accountName);
                 configureIntents();
                 configureButtons();
             } else if (resultCode == RESULT_CANCELED) {

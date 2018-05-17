@@ -5,11 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="hr.fer.MainActivity">
+    tools:context="hr.fer.MainActivity"
+    android:weightSum="1">
 
     <Button
         android:id="@+id/locationButton"
-        android:layout_width="264dp"
+        android:layout_width="match_parent"
         android:layout_height="43dp"
         android:text="Start Location Collector"
         tools:layout_editor_absoluteX="62dp"
@@ -17,19 +18,28 @@
 
     <Button
         android:id="@+id/keyboardButton"
-        android:layout_width="265dp"
+        android:layout_width="match_parent"
         android:layout_height="43dp"
         android:text="Start Keyboard Collector"
         tools:layout_editor_absoluteX="60dp"
         tools:layout_editor_absoluteY="223dp" />
 
 
-
     <Button
         android:id="@+id/audioButton"
-        android:layout_width="264dp"
+        android:layout_width="match_parent"
         android:layout_height="43dp"
         android:text="Start Audio Collector"
         tools:layout_editor_absoluteX="62dp"
         tools:layout_editor_absoluteY="52dp" />
+
+    <TextView
+        android:id="@+id/account"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.06"
+        android:text="Using: none yet"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textStyle="bold" />
 </LinearLayout>
