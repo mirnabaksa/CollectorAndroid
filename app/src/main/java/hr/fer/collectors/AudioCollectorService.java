@@ -11,6 +11,7 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -84,11 +85,20 @@ public class AudioCollectorService extends Service {
         mRecorder = null;
     }
 
-    private HashMap<String, String> preparePOSTParams() {
+    private HashMap<String, String> preparePOSTParams(){
         HashMap<String, String> postDataParams = new HashMap<>();
         postDataParams.put("path", serverFileName);
         postDataParams.put("date", new Date().toString());
         postDataParams.put("account", account);
+
+        try {
+            FileInputStream in = new FileInputStream(new File(mFileName));
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
         return postDataParams;
     }
 

@@ -99,8 +99,9 @@ public class LocationCollectorService
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(60 *1000);
-        mLocationRequest.setFastestInterval(60 * 1000);
+        mLocationRequest.setInterval(30 * 60 *1000);
+        mLocationRequest.setFastestInterval(10 * 60 * 1000);
+        mLocationRequest.setSmallestDisplacement(10.0f);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
     }
 
@@ -158,31 +159,6 @@ public class LocationCollectorService
         }
     }
 
-/*
-    private class PostDataTOServer extends AsyncTask<Void, Void, Void> {
-        String response = "";
-
-        HashMap<String, String> postDataParams;
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-        }
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            postDataParams = new HashMap<>();
-            postDataParams.put("id", String.valueOf(++userid));
-            postDataParams.put("latitude", String.valueOf(latitude));
-            postDataParams.put("longitude", String.valueOf(longitude));
-            postDataParams.put("datetime", datetime.toString());
-            postDataParams.put("address", address);
-
-            response = service.ServerData(SERVER_PATH,postDataParams);
-            return null;
-        }
-
-
-    }*/
 }
 
 
