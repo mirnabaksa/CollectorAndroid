@@ -22,10 +22,7 @@ public class PostDataToServer extends AsyncTask<Void, Void, Void> {
     }
     @Override
     protected Void doInBackground(Void... arg0) {
-        Log.d("here", "here");
-        String response = conn.ServerData(serverPath, postDataParams);
-        Log.d("server response", response);
-        Log.d("path", serverPath);
+        String response = conn.send(serverPath, postDataParams);
         return null;
     }
 

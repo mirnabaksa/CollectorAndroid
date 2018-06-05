@@ -99,8 +99,8 @@ public class LocationCollectorService
 
     protected void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(30 * 60 *1000);
-        mLocationRequest.setFastestInterval(10 * 60 * 1000);
+        mLocationRequest.setInterval(10 * 60 *1000);
+        mLocationRequest.setFastestInterval(50 * 60 * 1000);
         mLocationRequest.setSmallestDisplacement(10.0f);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
     }

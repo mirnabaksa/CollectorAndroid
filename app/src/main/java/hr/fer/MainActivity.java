@@ -31,12 +31,11 @@ import hr.fer.collectors.AudioCollectorService;
 import hr.fer.collectors.KeyboardCollectorService;
 import hr.fer.collectors.LocationCollectorService;
 
-import hr.fer.keyboard.R;
+import hr.fer.R;
 
 public class MainActivity extends AppCompatActivity {
     private final static int WAIT_INTERVAL = 10 * 1000; //10 seconds
     private final static int ACCOUNT_CODE = 1;
-    private final static int KEYBOARD_CODE = 2;
 
     private Button recordButton;
     private Button keyboardButton;
@@ -62,20 +61,26 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        accountHolder = (TextView) findViewById(R.id.account);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
             checkPermission();
         }
 
+        accountHolder = findViewById(R.id.account);
+        if(savedInstanceState != null){
+            accountName = savedInstanceState.getString("account");
+            accountHolder.setText(accountName);
+        }else{
+            accountIntent = AccountPicker.newChooseAccountIntent(null, null,
+                    new String[] {"com.google"},
+                    false, null, null, null, null);
+            startActivityForResult(accountIntent, ACCOUNT_CODE);
+        }
+    }
 
-        accountIntent = AccountPicker.newChooseAccountIntent(null, null,
-                new String[] {"com.google"},
-                false, null, null, null, null);
-        startActivityForResult(accountIntent, ACCOUNT_CODE);
-
-
-
+    @Override
+    protected void onSaveInstanceState (Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("account", accountName);
     }
 
     private void configureIntents(){
@@ -90,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void configureButtons(){
-        locationButton = (Button) findViewById(R.id.locationButton);
+        locationButton = findViewById(R.id.locationButton);
         locationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -106,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        keyboardButton = (Button) findViewById(R.id.keyboardButton);
+        keyboardButton = findViewById(R.id.keyboardButton);
         keyboardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -118,14 +123,13 @@ public class MainActivity extends AppCompatActivity {
 
                     AlertDialog.Builder builder;
 
-
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
                     } else {
                         builder = new AlertDialog.Builder(MainActivity.this);
                     }
-                    builder.setTitle("Warning")
-                            .setMessage("In order for the Keyboard Collector to work, you need to set the current" +
+                    builder.setTitle("Set Keyboard")
+                            .setMessage("In order for the Keyboard Collector to work, you need to set the current " +
                                     "keyboard to Collector IME in your settings. Ignore if you have already done this! ")
                             .setPositiveButton("Go to settings", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
@@ -138,13 +142,12 @@ public class MainActivity extends AppCompatActivity {
 
                                 }
                             })
-                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .setIcon(android.R.drawable.ic_dialog_info)
                             .show();
 
-
-
-
-                }else text = "Start";
+                }else{
+                    text = "Start";
+                }
 
                 keyboardButton.setText(text + keyboardButtonText);
                 manageService(keyboardIntent, keyboard);
@@ -176,10 +179,10 @@ public class MainActivity extends AppCompatActivity {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
 
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.RECORD_AUDIO},
-                    123);
-
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.RECORD_AUDIO},
+                            123);
             try {
                 Thread.currentThread().sleep(WAIT_INTERVAL);
             } catch (InterruptedException e) {
@@ -200,13 +203,11 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == ACCOUNT_CODE) {
             if (resultCode == RESULT_OK) {
                 this.accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-
-                Log.d("acc", accountName != null? accountName : "Null");
-
                 accountHolder.setText("Using: " + this.accountName);
                 configureIntents();
                 configureButtons();
             } else if (resultCode == RESULT_CANCELED) {
+
                 AlertDialog.Builder builder;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);

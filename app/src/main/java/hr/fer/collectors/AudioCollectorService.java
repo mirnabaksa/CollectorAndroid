@@ -7,12 +7,17 @@ import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
+
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -23,12 +28,10 @@ public class AudioCollectorService extends Service {
     private static final String FILE_NAME = "audio";
     private static final String FILE_EXT = ".3gp";
     private final String SERVER_PATH = "http://collector-env-1.2ta8wpyecx.us-east-2.elasticbeanstalk.com/audio/store";
-    private final String FTP_PATH = "files.000webhost.com";
-    private final String username = "zavradmb2018";
-    private final String pass =  "zavrsnirad2018";
 
     private String account;
     private String mFileName = null;
+    private String bytes;
     private String serverFileName;
     private MediaRecorder mRecorder = null;
 
@@ -78,11 +81,28 @@ public class AudioCollectorService extends Service {
 
     private void stopRecording() {
         mRecorder.stop();
+        byte[] bytes = getBytes(mFileName);
+        this.bytes = new String(bytes);
         new PostDataToServer(SERVER_PATH, preparePOSTParams()).execute();
 
-        new UploadFileAsync(mFileName).execute();
         mRecorder.release();
         mRecorder = null;
+    }
+
+    private byte[] getBytes(String path) {
+        byte[] getBytes = {};
+        try {
+            File file = new File(path);
+            getBytes = new byte[(int) file.length()];
+            InputStream is = new FileInputStream(file);
+            is.read(getBytes);
+            is.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return getBytes;
     }
 
     private HashMap<String, String> preparePOSTParams(){
@@ -90,62 +110,11 @@ public class AudioCollectorService extends Service {
         postDataParams.put("path", serverFileName);
         postDataParams.put("date", new Date().toString());
         postDataParams.put("account", account);
-
-        try {
-            FileInputStream in = new FileInputStream(new File(mFileName));
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
+        postDataParams.put("bytes", bytes);
 
         return postDataParams;
     }
 
-
-    class UploadFileAsync extends AsyncTask<String, Void, String> {
-
-        private String filePath;
-
-        public UploadFileAsync(String path) {
-            Log.d("upload", "async");
-            this.filePath = path;
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            FTPClient con = null;
-            try
-            {
-                con = new FTPClient();
-                con.connect(FTP_PATH);
-                con.changeWorkingDirectory("/records");
-
-
-                if (con.login(username,pass))
-                {
-                    con.enterLocalPassiveMode();
-                    con.setFileType(FTP.BINARY_FILE_TYPE);
-                    String data = filePath;
-
-                    FileInputStream in = new FileInputStream(new File(data));
-                    boolean result = con.storeFile(serverFileName, in);
-                    in.close();
-                    if (result) Log.v("Audio", "Upload succeeded");
-
-                    con.logout();
-                    con.disconnect();
-                }
-            }
-            catch (Exception e)
-            {
-                Log.v("Audio","Upload failed");
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-    }
 }
 
 

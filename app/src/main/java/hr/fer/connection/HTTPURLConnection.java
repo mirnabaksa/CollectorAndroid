@@ -3,6 +3,7 @@ package hr.fer.connection;
 
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -35,16 +36,13 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
-/**
- * NEEDS REWRITING
- */
 public class HTTPURLConnection {
     private static final String LINE_FEED = "\r\n";
     private String response="";
     private String boundary;
     private URL url;
 
-    public String ServerData(String path, HashMap<String, String> params) {
+    public String send(String path, HashMap<String, String> params) {
         try {
             url = new URL(path);
             boundary = "===" + System.currentTimeMillis() + "===";
@@ -62,8 +60,7 @@ public class HTTPURLConnection {
             BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(os, "UTF-8"));
             String paramsString = getPostDataString(params);
-            Log.d("params", paramsString);
-
+            Log.d("p", paramsString);
             writer.write(paramsString);
 
             writer.flush();
@@ -85,7 +82,9 @@ public class HTTPURLConnection {
         for(Map.Entry<String, String> entry : params.entrySet()){
             writer.append("--" + boundary).append(LINE_FEED);
             writer.append("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"").append(LINE_FEED);
-            writer.append("Content-Type: text/plain; charset=" + "UTF-8").append(
+            if(entry.getKey().equals("bytes")) writer.append("Content-Type: application/x-object;").append(
+                    LINE_FEED);
+            else writer.append("Content-Type: text/plain; charset=" + "UTF-8").append(
                     LINE_FEED);
             writer.append(LINE_FEED);
             writer.append(entry.getValue());
