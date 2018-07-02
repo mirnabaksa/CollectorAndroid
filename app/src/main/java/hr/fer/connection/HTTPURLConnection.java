@@ -12,7 +12,10 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,6 +39,8 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import static android.R.attr.data;
+
 public class HTTPURLConnection {
     private static final String LINE_FEED = "\r\n";
     private String response="";
@@ -56,44 +61,64 @@ public class HTTPURLConnection {
             connection.setRequestProperty("Content-Type",
                     "multipart/form-data; boundary=" + boundary);
 
-            OutputStream os = connection.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(os, "UTF-8"));
-            String paramsString = getPostDataString(params);
-            Log.d("p", paramsString);
-            writer.write(paramsString);
+            DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
 
-            writer.flush();
-            writer.close();
-            os.close();
+            writeToStream(dos, params);
 
+            dos.flush();
+            dos.close();
 
             int responseCode = connection.getResponseCode();
             response = String.valueOf(responseCode);
+            Log.d("respo", response);
          }catch (Exception e) {
             e.printStackTrace();
         }
         return response;
     }
 
-    private String getPostDataString(HashMap<String, String> params) throws UnsupportedEncodingException {
-        StringBuilder writer = new StringBuilder();
-
+    private void writeToStream(DataOutputStream dos, HashMap<String, String> params) throws IOException {
         for(Map.Entry<String, String> entry : params.entrySet()){
-            writer.append("--" + boundary).append(LINE_FEED);
-            writer.append("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"").append(LINE_FEED);
-            if(entry.getKey().equals("bytes")) writer.append("Content-Type: application/x-object;").append(
-                    LINE_FEED);
-            else writer.append("Content-Type: text/plain; charset=" + "UTF-8").append(
-                    LINE_FEED);
-            writer.append(LINE_FEED);
-            writer.append(entry.getValue());
-            writer.append(LINE_FEED);
+            dos.writeBytes("--" + boundary + LINE_FEED);
+
+
+            if(entry.getKey().equals("audiofilepath")) {
+                dos.writeBytes("Content-Disposition: post-data; name=audiofilepath;filename="
+                                + params.get("path") + "" + LINE_FEED);
+                dos.writeBytes(LINE_FEED);
+                writeAudio(dos, entry.getValue());
+                dos.writeBytes(LINE_FEED);
+            }
+            else {
+                dos.writeBytes("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"" + LINE_FEED);
+                dos.writeBytes("Content-Type: text/plain; charset=" + "UTF-8" + LINE_FEED);
+                dos.writeBytes(LINE_FEED);
+                dos.writeBytes(entry.getValue());
+                dos.writeBytes(LINE_FEED);
+            }
 
         }
+        dos.writeBytes(LINE_FEED);
+       dos.writeBytes("--" + boundary + "--" + LINE_FEED);
 
-        writer.append(LINE_FEED);
-        writer.append("--" + boundary + "--").append(LINE_FEED);
-        return writer.toString();
+
+    }
+
+
+    private void writeAudio(DataOutputStream dos, String fileName) throws IOException {
+        FileInputStream fileInputStream = new FileInputStream(fileName);
+        int bytesAvailable = fileInputStream.available();
+        int bufferSize = Math.min(bytesAvailable, 1024);
+        byte[] buffer = new byte[bufferSize];
+        int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+        while (bytesRead > 0)
+        {
+            dos.write(buffer, 0, bytesRead);
+            bytesAvailable = fileInputStream.available();
+            bufferSize = Math.min(bytesAvailable, 1024);
+            bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+        }
+
     }
 }

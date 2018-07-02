@@ -23,6 +23,7 @@ public class PostDataToServer extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... arg0) {
         String response = conn.send(serverPath, postDataParams);
+
         return null;
     }
 

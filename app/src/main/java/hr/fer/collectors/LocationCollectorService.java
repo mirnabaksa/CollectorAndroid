@@ -28,7 +28,7 @@ import hr.fer.connection.PostDataToServer;
 public class LocationCollectorService
         extends Service {
     private final String ADDRESS_UNKNOWN = "Unknown";
-    private final String SERVER_PATH = "http://collector-env-1.2ta8wpyecx.us-east-2.elasticbeanstalk.com/location/store";
+    private final String SERVER_PATH = "http://161.53.64.201:8080/collector/location/store";
 
     private FusedLocationProviderClient mFusedLocationClient;
     private HTTPURLConnection service;

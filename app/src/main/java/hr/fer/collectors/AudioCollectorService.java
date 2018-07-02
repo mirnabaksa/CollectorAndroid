@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -27,13 +28,14 @@ import hr.fer.connection.PostDataToServer;
 public class AudioCollectorService extends Service {
     private static final String FILE_NAME = "audio";
     private static final String FILE_EXT = ".3gp";
-    private final String SERVER_PATH = "http://collector-env-1.2ta8wpyecx.us-east-2.elasticbeanstalk.com/audio/store";
+    private final String SERVER_PATH = "http://161.53.64.201:8080/collector/audio/store";
 
     private String account;
     private String mFileName = null;
     private String bytes;
     private String serverFileName;
     private MediaRecorder mRecorder = null;
+    private String outputFile = null;
 
 
     @Nullable
@@ -54,6 +56,9 @@ public class AudioCollectorService extends Service {
         mFileName += "/" + FILE_NAME + FILE_EXT;
         serverFileName = FILE_NAME + "-" + System.currentTimeMillis() + FILE_EXT;;
 
+       //  outputFile = Environment.getExternalStorageDirectory().
+        //        getAbsolutePath() +  "/"  + System.currentTimeMillis() + ".3gpp";
+
         startRecording();
     }
 
@@ -72,19 +77,18 @@ public class AudioCollectorService extends Service {
 
         try {
             mRecorder.prepare();
+            mRecorder.start();
         } catch (IOException e) {
             Log.e("Audio", "prepare() failed");
 
         }
-        mRecorder.start();
+
     }
 
     private void stopRecording() {
         mRecorder.stop();
-        byte[] bytes = getBytes(mFileName);
-        this.bytes = new String(bytes);
         new PostDataToServer(SERVER_PATH, preparePOSTParams()).execute();
-
+        mRecorder.reset();
         mRecorder.release();
         mRecorder = null;
     }
@@ -110,7 +114,8 @@ public class AudioCollectorService extends Service {
         postDataParams.put("path", serverFileName);
         postDataParams.put("date", new Date().toString());
         postDataParams.put("account", account);
-        postDataParams.put("bytes", bytes);
+        postDataParams.put("audiofilepath", mFileName);
+        //postDataParams.put("bytes", bytes);
 
         return postDataParams;
     }

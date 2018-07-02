@@ -31,7 +31,6 @@ import hr.fer.collectors.AudioCollectorService;
 import hr.fer.collectors.KeyboardCollectorService;
 import hr.fer.collectors.LocationCollectorService;
 
-import hr.fer.R;
 
 public class MainActivity extends AppCompatActivity {
     private final static int WAIT_INTERVAL = 10 * 1000; //10 seconds
@@ -65,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             checkPermission();
         }
 
-        accountHolder = findViewById(R.id.account);
+        accountHolder = (TextView) findViewById(R.id.account);
         if(savedInstanceState != null){
             accountName = savedInstanceState.getString("account");
             accountHolder.setText(accountName);
@@ -95,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void configureButtons(){
-        locationButton = findViewById(R.id.locationButton);
+        locationButton = (Button) findViewById(R.id.locationButton);
         locationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -111,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        keyboardButton = findViewById(R.id.keyboardButton);
+        keyboardButton = (Button) findViewById(R.id.keyboardButton);
         keyboardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
